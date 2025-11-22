@@ -1,0 +1,139 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title Your Booking Confirmation - HAWO Salon
+    style.
+      body {
+        font-family: 'Montserrat', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .logo {
+        max-width: 180px;
+        height: auto;
+      }
+      .content {
+        padding: 30px 20px;
+      }
+      h1 {
+        color: #0B0B0B;
+        font-family: 'Playfair Display', serif;
+        margin-top: 0;
+      }
+      p {
+        margin-bottom: 20px;
+      }
+      .booking-details {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .detail-row {
+        display: flex;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+      .detail-label {
+        font-weight: 600;
+        width: 120px;
+        color: #666;
+      }
+      .detail-value {
+        flex: 1;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 30px;
+        background-color: #D4AF37;
+        color: #0B0B0B !important;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 600;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+      }
+      .button:hover {
+        background-color: #c19b2e;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 12px;
+        color: #777;
+        border-top: 1px solid #eee;
+      }
+      .highlight {
+        color: #D4AF37;
+        font-weight: 600;
+      }
+  body
+    .container
+      .header
+        img.logo(src='https://hawo-salon.com/logo.png' alt='HAWO Salon Logo')
+        h1 Booking Confirmed!
+      
+      .content
+        p Dear #{name},
+        
+        p Your appointment at HAWO Salon has been successfully scheduled. We're looking forward to seeing you!
+        
+        .booking-details
+          .detail-row
+            .detail-label Date
+            .detail-value #{booking.date}
+          .detail-row
+            .detail-label Time
+            .detail-value #{booking.time}
+          .detail-row
+            .detail-label Service
+            .detail-value #{booking.service.name}
+          .detail-row
+            .detail-label Staff
+            .detail-value #{booking.staff.name}
+          .detail-row
+            .detail-label Duration
+            .detail-value #{booking.duration} minutes
+          .detail-row(style='border-bottom: none; padding-bottom: 0;')
+            .detail-label Total
+            .detail-value $#{booking.price.toFixed(2)}
+        
+        p Please arrive 10 minutes before your scheduled time. If you need to reschedule or cancel, please do so at least 24 hours in advance.
+        
+        a.button(href=`${process.env.FRONTEND_URL}/my-bookings` style='color: #0B0B0B;') View My Bookings
+        
+        p If you have any questions or need to make changes to your appointment, please contact us at #{supportEmail} or call us at (555) 123-4567.
+        
+        p We can't wait to see you!
+        
+        p Warm regards,
+        br
+        | The HAWO Salon Team
+      
+      .footer
+        p © #{new Date().getFullYear()} HAWO Salon. All rights reserved.
+        p 
+          | HAWO Salon, 123 Beauty Street, City, Country
+          br
+          | You're receiving this email because you booked an appointment at HAWO Salon.

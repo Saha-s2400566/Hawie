@@ -1,0 +1,152 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title Reminder: Your Upcoming Appointment - HAWO Salon
+    style.
+      body {
+        font-family: 'Montserrat', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .logo {
+        max-width: 180px;
+        height: auto;
+      }
+      .content {
+        padding: 30px 20px;
+      }
+      h1 {
+        color: #0B0B0B;
+        font-family: 'Playfair Display', serif;
+        margin-top: 0;
+      }
+      p {
+        margin-bottom: 20px;
+      }
+      .reminder-banner {
+        background-color: #FFF8E1;
+        border-left: 4px solid #FFC107;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 0 4px 4px 0;
+      }
+      .booking-details {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .detail-row {
+        display: flex;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+      .detail-label {
+        font-weight: 600;
+        width: 120px;
+        color: #666;
+      }
+      .detail-value {
+        flex: 1;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 30px;
+        background-color: #D4AF37;
+        color: #0B0B0B !important;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 600;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+      }
+      .button.secondary {
+        background-color: #f5f5f5;
+        color: #333 !important;
+        margin-left: 10px;
+      }
+      .button:hover {
+        background-color: #c19b2e;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .button.secondary:hover {
+        background-color: #e0e0e0;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 12px;
+        color: #777;
+        border-top: 1px solid #eee;
+      }
+  body
+    .container
+      .header
+        img.logo(src='https://hawo-salon.com/logo.png' alt='HAWO Salon Logo')
+        h1 Reminder: Your Appointment Tomorrow
+      
+      .content
+        p Dear #{name},
+        
+        p This is a friendly reminder about your upcoming appointment at HAWO Salon.
+        
+        .reminder-banner
+          p 💡 Please arrive 10 minutes before your scheduled time. Late arrivals may result in reduced service time.
+        
+        .booking-details
+          .detail-row
+            .detail-label Date
+            .detail-value #{booking.date}
+          .detail-row
+            .detail-label Time
+            .detail-value #{booking.time}
+          .detail-row
+            .detail-label Service
+            .detail-value #{booking.service.name}
+          .detail-row
+            .detail-label Staff
+            .detail-value #{booking.staff.name}
+          .detail-row(style='border-bottom: none; padding-bottom: 0;')
+            .detail-label Duration
+            .detail-value #{booking.duration} minutes
+        
+        p If you need to reschedule or cancel your appointment, please do so as soon as possible.
+        
+        div(style='margin: 25px 0;')
+          a.button(href=`${process.env.FRONTEND_URL}/my-bookings/${booking._id}/reschedule` style='color: #0B0B0B;') Reschedule
+          a.button.secondary(href=`${process.env.FRONTEND_URL}/my-bookings/${booking._id}/cancel` style='color: #333;') Cancel
+        
+        p If you have any questions, feel free to reply to this email or call us at (555) 123-4567.
+        
+        p We look forward to seeing you soon!
+        
+        p Warm regards,
+        br
+        | The HAWO Salon Team
+      
+      .footer
+        p © #{new Date().getFullYear()} HAWO Salon. All rights reserved.
+        p 
+          | HAWO Salon, 123 Beauty Street, City, Country
+          br
+          | You're receiving this email because you have an upcoming appointment at HAWO Salon.
