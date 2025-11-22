@@ -1,28 +1,25 @@
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
-const Staff = require('../models/Staff');
-const User = require('../models/User');
+const Staff = require('../models/Staff.model');
+const User = require('../models/User.model');
 
 // @desc    Get all staff members
 // @route   GET /api/v1/staff
 // @access  Public
 exports.getStaff = asyncHandler(async (req, res, next) => {
-  res.status(200).json(res.advancedResults);
+  const staff = await Staff.findAll();
+  res.status(200).json({
+    success: true,
+    count: staff.length,
+    data: staff
+  });
 });
 
 // @desc    Get single staff member
 // @route   GET /api/v1/staff/:id
 // @access  Public
-exports.getSingleStaff = asyncHandler(async (req, res, next) => {
-  const staff = await Staff.findById(req.params.id)
-    .populate({
-      path: 'user',
-      select: 'name email phone'
-    })
-    .populate({
-      path: 'services',
-      select: 'name price duration'
-    });
+exports.getStaffMember = asyncHandler(async (req, res, next) => {
+  const staff = await Staff.findByPk(req.params.id);
 
   if (!staff) {
     return next(
@@ -37,23 +34,9 @@ exports.getSingleStaff = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/staff
 // @access  Private/Admin
 exports.createStaff = asyncHandler(async (req, res, next) => {
-  // Check if user exists
-  const user = await User.findById(req.body.user);
-  if (!user) {
-    return next(
-      new ErrorResponse(`User not found with id of ${req.body.user}`, 404)
-    );
-  }
+  // Check if user exists (if we are linking to a user account)
+  // For now, let's assume we just create a staff profile directly
 
-  // Check if staff profile already exists for this user
-  const existingStaff = await Staff.findOne({ user: req.body.user });
-  if (existingStaff) {
-    return next(
-      new ErrorResponse('Staff profile already exists for this user', 400)
-    );
-  }
-
-  // Create staff
   const staff = await Staff.create(req.body);
 
   res.status(201).json({
@@ -67,7 +50,7 @@ exports.createStaff = asyncHandler(async (req, res, next) => {
 // @access  Private/Admin
 // @access  Private/Staff (for self-update)
 exports.updateStaff = asyncHandler(async (req, res, next) => {
-  let staff = await Staff.findById(req.params.id);
+  let staff = await Staff.findByPk(req.params.id);
 
   if (!staff) {
     return next(
@@ -76,39 +59,13 @@ exports.updateStaff = asyncHandler(async (req, res, next) => {
   }
 
   // Make sure user is staff member or admin
-  if (
-    staff.user.toString() !== req.user.id &&
-    req.user.role !== 'admin' &&
-    req.user.role !== 'staff'
-  ) {
-    return next(
-      new ErrorResponse(
-        `User ${req.user.id} is not authorized to update this staff`,
-        401
-      )
-    );
+  if (req.user.role !== 'admin') {
+    // Add logic here if we link staff to user account
+    // For now, restrict to admin
+    return next(new ErrorResponse(`Not authorized to update staff`, 401));
   }
 
-  // If staff member is updating themselves, restrict fields they can update
-  if (staff.user.toString() === req.user.id && req.user.role === 'staff') {
-    const { bio, workingHours, services } = req.body;
-    const updateFields = {};
-    
-    if (bio) updateFields.bio = bio;
-    if (workingHours) updateFields.workingHours = workingHours;
-    if (services) updateFields.services = services;
-    
-    staff = await Staff.findByIdAndUpdate(req.params.id, updateFields, {
-      new: true,
-      runValidators: true
-    });
-  } else {
-    // Admin can update all fields
-    staff = await Staff.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
-  }
+  await staff.update(req.body);
 
   res.status(200).json({ success: true, data: staff });
 });
@@ -117,7 +74,7 @@ exports.updateStaff = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/staff/:id
 // @access  Private/Admin
 exports.deleteStaff = asyncHandler(async (req, res, next) => {
-  const staff = await Staff.findById(req.params.id);
+  const staff = await Staff.findByPk(req.params.id);
 
   if (!staff) {
     return next(
@@ -125,7 +82,7 @@ exports.deleteStaff = asyncHandler(async (req, res, next) => {
     );
   }
 
-  await staff.remove();
+  await staff.destroy();
 
   res.status(200).json({ success: true, data: {} });
 });
@@ -135,22 +92,21 @@ exports.deleteStaff = asyncHandler(async (req, res, next) => {
 // @access  Public
 exports.getStaffAvailability = asyncHandler(async (req, res, next) => {
   const { date } = req.query;
-  
+
   if (!date) {
     return next(new ErrorResponse('Please provide a date', 400));
   }
 
-  const staff = await Staff.findById(req.params.id);
-  
+  const staff = await Staff.findByPk(req.params.id);
+
   if (!staff) {
     return next(
       new ErrorResponse(`Staff not found with id of ${req.params.id}`, 404)
     );
   }
 
-  // In a real app, you would check the staff's schedule and existing bookings
-  // to determine available time slots. This is a simplified example.
-  const availableSlots = generateTimeSlots(staff.workingHours, date);
+  // Simplified availability logic
+  const availableSlots = generateTimeSlots(null, date);
 
   res.status(200).json({
     success: true,
@@ -161,15 +117,10 @@ exports.getStaffAvailability = asyncHandler(async (req, res, next) => {
 
 // Helper function to generate time slots (simplified)
 function generateTimeSlots(workingHours, date) {
-  // This is a simplified example. In a real app, you would:
-  // 1. Get the staff's working hours for the specified day
-  // 2. Check existing bookings for that day
-  // 3. Generate available time slots based on service duration
-  
   const slots = [];
   const startHour = 9; // 9 AM
   const endHour = 18;  // 6 PM
-  
+
   for (let hour = startHour; hour < endHour; hour++) {
     for (let minute = 0; minute < 60; minute += 30) {
       slots.push({
@@ -179,6 +130,14 @@ function generateTimeSlots(workingHours, date) {
       });
     }
   }
-  
+
   return slots;
 }
+
+// Placeholder for photo upload
+exports.staffPhotoUpload = asyncHandler(async (req, res, next) => {
+  res.status(200).json({ success: true, data: {} });
+});
+
+// Export getSingleStaff as getStaffMember to match routes
+exports.getSingleStaff = exports.getStaffMember;

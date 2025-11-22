@@ -1,20 +1,26 @@
 const path = require('path');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
-const Service = require('../models/Service');
+const Service = require('../models/Service.model');
 
 // @desc    Get all services
 // @route   GET /api/v1/services
 // @access  Public
 exports.getServices = asyncHandler(async (req, res, next) => {
-  res.status(200).json(res.advancedResults);
+  const services = await Service.findAll();
+
+  res.status(200).json({
+    success: true,
+    count: services.length,
+    data: services
+  });
 });
 
 // @desc    Get single service
 // @route   GET /api/v1/services/:id
 // @access  Public
 exports.getService = asyncHandler(async (req, res, next) => {
-  const service = await Service.findById(req.params.id);
+  const service = await Service.findByPk(req.params.id);
 
   if (!service) {
     return next(
@@ -29,8 +35,8 @@ exports.getService = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/services
 // @access  Private/Admin
 exports.createService = asyncHandler(async (req, res, next) => {
-  // Add user to req.body
-  req.body.user = req.user.id;
+  // Add user to req.body if needed, but Service model doesn't have user field currently
+  // req.body.user = req.user.id;
 
   const service = await Service.create(req.body);
 
@@ -44,7 +50,7 @@ exports.createService = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/services/:id
 // @access  Private/Admin
 exports.updateService = asyncHandler(async (req, res, next) => {
-  let service = await Service.findById(req.params.id);
+  let service = await Service.findByPk(req.params.id);
 
   if (!service) {
     return next(
@@ -52,8 +58,8 @@ exports.updateService = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Make sure user is service owner or admin
-  if (service.user.toString() !== req.user.id && req.user.role !== 'admin') {
+  // Make sure user is admin (already checked by middleware, but good to be safe)
+  if (req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
         `User ${req.user.id} is not authorized to update this service`,
@@ -62,10 +68,7 @@ exports.updateService = asyncHandler(async (req, res, next) => {
     );
   }
 
-  service = await Service.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+  await service.update(req.body);
 
   res.status(200).json({ success: true, data: service });
 });
@@ -74,7 +77,7 @@ exports.updateService = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/services/:id
 // @access  Private/Admin
 exports.deleteService = asyncHandler(async (req, res, next) => {
-  const service = await Service.findById(req.params.id);
+  const service = await Service.findByPk(req.params.id);
 
   if (!service) {
     return next(
@@ -82,8 +85,7 @@ exports.deleteService = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Make sure user is service owner or admin
-  if (service.user.toString() !== req.user.id && req.user.role !== 'admin') {
+  if (req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
         `User ${req.user.id} is not authorized to delete this service`,
@@ -92,7 +94,7 @@ exports.deleteService = asyncHandler(async (req, res, next) => {
     );
   }
 
-  await service.remove();
+  await service.destroy();
 
   res.status(200).json({ success: true, data: {} });
 });
@@ -101,7 +103,7 @@ exports.deleteService = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/services/:id/photo
 // @access  Private/Admin
 exports.servicePhotoUpload = asyncHandler(async (req, res, next) => {
-  const service = await Service.findById(req.params.id);
+  const service = await Service.findByPk(req.params.id);
 
   if (!service) {
     return next(
@@ -109,8 +111,7 @@ exports.servicePhotoUpload = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Make sure user is service owner or admin
-  if (service.user.toString() !== req.user.id && req.user.role !== 'admin') {
+  if (req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
         `User ${req.user.id} is not authorized to update this service`,
@@ -141,7 +142,7 @@ exports.servicePhotoUpload = asyncHandler(async (req, res, next) => {
   }
 
   // Create custom filename
-  file.name = `photo_${service._id}${path.parse(file.name).ext}`;
+  file.name = `photo_${service.id}${path.parse(file.name).ext}`;
 
   file.mv(`${process.env.FILE_UPLOAD_PATH}/services/${file.name}`, async err => {
     if (err) {
@@ -149,7 +150,7 @@ exports.servicePhotoUpload = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse(`Problem with file upload`, 500));
     }
 
-    await Service.findByIdAndUpdate(req.params.id, { photo: file.name });
+    await service.update({ imageUrl: file.name });
 
     res.status(200).json({
       success: true,

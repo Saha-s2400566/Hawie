@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const Staff = require('../models/Staff.model');
 const { protect, authorize } = require('../middleware/auth');
 const {
   getStaff,

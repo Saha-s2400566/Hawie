@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
+const Review = require('../models/Review.model');
 const { protect, authorize } = require('../middleware/auth');
 const {
   getReviews,
@@ -20,15 +21,15 @@ const checkReviewOwnership = async (req, res, next) => {
     if (!review) {
       return res.status(404).json({ success: false, message: 'Review not found' });
     }
-    
+
     // Check if the user is the owner of the review or an admin
     if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Not authorized to update this review' 
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to update this review'
       });
     }
-    
+
     req.review = review;
     next();
   } catch (error) {

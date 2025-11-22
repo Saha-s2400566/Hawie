@@ -1,4 +1,6 @@
-const { User } = require('../models');
+const User = require('../models/User.model');
+const crypto = require('crypto');
+const { Op } = require('sequelize');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
@@ -24,7 +26,7 @@ exports.register = asyncHandler(async (req, res, next) => {
 
   // Remove password from output
   user.password = undefined;
-  
+
   sendTokenResponse(user, 200, res);
 });
 
@@ -40,8 +42,8 @@ exports.login = asyncHandler(async (req, res, next) => {
   }
 
   // Check for user and include password (which is excluded by default)
-  const user = await User.scope('withPassword').findOne({ 
-    where: { email } 
+  const user = await User.scope('withPassword').findOne({
+    where: { email }
   });
 
   if (!user) {
@@ -57,7 +59,7 @@ exports.login = asyncHandler(async (req, res, next) => {
 
   // Remove password from output
   user.password = undefined;
-  
+
   sendTokenResponse(user, 200, res);
 });
 
@@ -86,7 +88,7 @@ exports.updateDetails = asyncHandler(async (req, res, next) => {
   };
 
   const user = await User.findByPk(req.user.id);
-  
+
   if (!user) {
     return next(new ErrorResponse(`User not found with id of ${req.user.id}`, 404));
   }

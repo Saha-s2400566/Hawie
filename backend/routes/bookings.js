@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
+const Booking = require('../models/Booking.model');
 const { protect, authorize } = require('../middleware/auth');
 const {
   getBookings,
@@ -22,19 +23,19 @@ const checkBookingOwnership = async (req, res, next) => {
     if (!booking) {
       return res.status(404).json({ success: false, message: 'Booking not found' });
     }
-    
+
     // Check if the user is the owner of the booking, the assigned staff, or an admin
     if (
-      booking.user.toString() !== req.user.id && 
-      booking.staff.toString() !== req.user.id && 
+      booking.user.toString() !== req.user.id &&
+      booking.staff.toString() !== req.user.id &&
       req.user.role !== 'admin'
     ) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Not authorized to access this booking' 
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to access this booking'
       });
     }
-    
+
     req.booking = booking;
     next();
   } catch (error) {
