@@ -1,4 +1,4 @@
-# Hawo - Beauty and Wellness Management System
+# Hawie - Beauty and Wellness Management System
 
 A full-stack application for managing beauty and wellness appointments, staff, and services.
 
@@ -49,11 +49,6 @@ DB_USER=your_mysql_username
 DB_PASSWORD=your_mysql_password
 DB_NAME=havasa
 
-# JWT Configuration
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRE=30d
-JWT_COOKIE_EXPIRE=30
-
 # Server Configuration
 NODE_ENV=development
 PORT=5000
@@ -102,6 +97,7 @@ npm start - Start the development server
 npm build - Build for production
 npm test - Run tests
 npm run eject - Eject from create-react-app
+
 Project Structure
 hawo/
 ├── backend/               # Backend server
@@ -124,6 +120,8 @@ hawo/
     │   ├── App.js        # Main App component
     │   └── index.js      # Entry point
     └── package.json
+
+    
 Technologies Used
 Backend
 Node.js
